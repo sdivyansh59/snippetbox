@@ -8,6 +8,7 @@ import (
 	"strconv"
 )
 
+
 func home(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -35,7 +36,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	w.Write([]byte("Hello from snippetbox"))
+	// w.Write([]byte("Hello from snippetbox"))
 }
 
 
