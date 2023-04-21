@@ -2,18 +2,42 @@ package main
 
 import (
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
 	}
+
+	files := []string {
+		"./ui/html/home.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"./ui/html/footer.partial.tmpl",
+	}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w,"Internal Server Error ", http.StatusInternalServerError)
+		return 
+	}
+
+	err = ts.Execute(w,nil)
+	if err != nil {
+		log.Println(err.Error())
+		http.Error(w,"Internal Server Error", 500)
+		return
+	}
+
+
 	w.Write([]byte("Hello from snippetbox"))
 }
+
 
 func showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -23,19 +47,13 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "Displaying  a specific snippet with ID %d ...", id)
-	// w.Write([]byte("Displaying  a specific snippet witj ID"))
 }
+
 
 func createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.Header().Set("Allow", "POST")
-		
-		// w.Header().Set("Divyansh", "Singh")   added
-		// w.WriteHeader(http.StatusMethodNotAllowed)  // 405
-		// w.Write([]byte("Method not allowed"))
-		// w.Header().Set("Divyansh", "Singh") not added
-
-		http.Error(w, "Method Not Allowed", 405)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
