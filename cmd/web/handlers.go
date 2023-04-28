@@ -14,6 +14,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	
 	files := []string {
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
@@ -24,30 +25,22 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		app.serveError(w,err) // use the serverError() helper.
-		// app.errorLog.Println(err.Error())
-		// http.Error(w,"Internal Server Error ", http.StatusInternalServerError)
 		return 
 	}
 
 	err = ts.Execute(w,nil)
 	if err != nil {
 		app.serveError(w,err) // use the serverError() helper
-		// app.errorLog.Println(err.Error())
-		// http.Error(w,"Internal Server Error", 500)
 		return
 	}
 
 }
 
-
  
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
-
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-
 	if err != nil || id < 1 {
 		app.notFound(w)
-		// http.NotFound(w, r)
 		return
 	}
 
@@ -60,9 +53,21 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.Header().Set("Allow", "POST")
 		app.clientError(w,http.StatusMethodNotAllowed)
-		// http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	w.Write([]byte("Crete a new snippet"))
+	// crete some variable holding dummy data
+	title := "0 small"
+	content := "0 small/nclimb mount fuji,\nBut slowely\n\n- Kobayanshi"
+	expires := "7"
+
+	// pass data to SnippetModel.Insert()
+	id, err := app.snippets.Insert(title,content,expires)
+	if err != nil {
+		app.serveError(w, err)
+		return 
+	}
+
+	// REdirect the user to the relevent page for the snippet.
+	http.Redirect(w,r,fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther)
 }
