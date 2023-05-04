@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
+
+	"github.com/sdivyansh59/snippetbox/pkg/models"
 )
 
 
@@ -14,25 +15,34 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
-	files := []string {
-		"./ui/html/home.page.tmpl",
-		"./ui/html/base.layout.tmpl",
-		"./ui/html/footer.partial.tmpl",
-	}
-
-	ts, err := template.ParseFiles(files...)
-
+	s, err := app.snippets.Latest()
 	if err != nil {
-		app.serveError(w,err) // use the serverError() helper.
+		app.serveError(w, err)
 		return 
 	}
 
-	err = ts.Execute(w,nil)
-	if err != nil {
-		app.serveError(w,err) // use the serverError() helper
-		return
+	for _, snippet := range s {
+		fmt.Fprintf(w,"%v\n", snippet)
 	}
+
+	// files := []string {
+	// 	"./ui/html/home.page.tmpl",
+	// 	"./ui/html/base.layout.tmpl",
+	// 	"./ui/html/footer.partial.tmpl",
+	// }
+
+	// ts, err := template.ParseFiles(files...)
+
+	// if err != nil {
+	// 	app.serveError(w,err) // use the serverError() helper.
+	// 	return 
+	// }
+
+	// err = ts.Execute(w,nil)
+	// if err != nil {
+	// 	app.serveError(w,err) // use the serverError() helper
+	// 	return
+	// }
 
 }
 
@@ -44,7 +54,16 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Displaying  a specific snippet with ID %d ...", id)
+	s, err := app.snippets.Get(id)
+	if err == models.ErrNoRecord {
+		app.notFound(w)
+		return
+	}else if err != nil {
+		app.serveError(w,err)
+		return 
+	}
+
+	fmt.Fprintf(w, "%v", s)
 }
 
 
